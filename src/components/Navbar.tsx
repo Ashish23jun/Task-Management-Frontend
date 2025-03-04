@@ -1,26 +1,27 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Use Link for better routing
 import { Button } from '@/components/ui/button';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate(); // Hook for navigation
 
   return (
-    <nav className="bg-blue-600 text-white py-4 px-6 shadow-md">
+    <nav className="fixed top-0 left-0 w-full bg-blue-600 text-white py-4 px-6 shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center">
-        {/* Title & Task List */}
+        {/* Title & Navigation Links */}
         <div className="text-xl font-bold flex items-center gap-4">
-          <a href="/" className="hover:text-gray-300 transition">
-            📋 Task Management App
-          </a>
+          <Link to="/" className="hover:text-gray-300 transition">
+            📋 Task Management
+          </Link>
           <span className="text-gray-300">|</span>
-          <a href="/dashboard" className="text-lg hover:text-gray-300 transition">
+          <Link to="/dashboard" className="text-lg hover:text-gray-300 transition">
             Dashboard
-          </a>
+          </Link>
           <span className="text-gray-300">|</span>
-          <a href="/list" className="text-lg hover:text-gray-300 transition">
+          <Link to="/list" className="text-lg hover:text-gray-300 transition">
             Task List
-          </a>
+          </Link>
         </div>
 
         {/* Navigation Buttons */}
