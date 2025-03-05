@@ -3,7 +3,6 @@ import React from 'react';
 const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      {/* Hero Section */}
       <section className="flex flex-col items-center text-center mt-10 px-6">
         <h1 className="text-4xl font-bold text-gray-800">Organize Your Tasks Efficiently 🚀</h1>
         <p className="text-lg text-gray-600 mt-4 max-w-xl">
@@ -15,7 +14,6 @@ const Home: React.FC = () => {
         </button>
       </section>
 
-      {/* Features Section */}
       <section className="mt-12 w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white shadow-md p-6 rounded-lg text-center">
           <h3 className="text-xl font-semibold text-gray-800">📅 Task Scheduling</h3>

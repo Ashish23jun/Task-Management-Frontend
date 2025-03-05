@@ -81,7 +81,6 @@ const TaskTable: React.FC = () => {
     );
   };
 
-  // Open dialog for adding or editing
   const openDialog = (task: any = null) => {
     setEditingTask(task);
     setIsDialogOpen(true);
@@ -89,14 +88,10 @@ const TaskTable: React.FC = () => {
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
-      {/* 🔹 Header Section */}
       <div className="mb-4">
-        {/* 🔹 Header Section */}
         <h2 className="text-2xl font-semibold text-gray-800">Task List</h2>
 
-        {/* 🔹 Buttons (Left) & Filters (Right) */}
         <div className="flex justify-between items-center mt-2">
-          {/* Left Section - Add & Delete Buttons */}
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => openDialog(null)}>
               + Add Task
@@ -106,9 +101,7 @@ const TaskTable: React.FC = () => {
             </Button>
           </div>
 
-          {/* Right Section - Sorting & Filtering */}
           <div className="flex gap-4">
-            {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary">
@@ -134,7 +127,6 @@ const TaskTable: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Priority Filter Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -153,7 +145,6 @@ const TaskTable: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Status Filter Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -179,9 +170,6 @@ const TaskTable: React.FC = () => {
         </div>
       </div>
 
-      {/* 🔹 Add/Edit Task Dialog */}
-
-      {/* 🔹 Task Table */}
       <Table>
         <TableHeader>
           <TableRow>
@@ -234,7 +222,6 @@ const TaskTable: React.FC = () => {
           ))}
         </TableBody>
       </Table>
-      {/* 🔹 Task Dialog (Add/Edit) */}
       {isDialogOpen && (
         <AddandEditDialogue
           isOpen={isDialogOpen}

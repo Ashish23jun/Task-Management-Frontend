@@ -38,7 +38,7 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
 
   const handleSubmit = () => {
     console.log({ title, priority, status: status ? 'Finished' : 'Pending', startTime, endTime });
-    onClose(); // Close dialog after submission
+    onClose();
   };
 
   return (
@@ -51,7 +51,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Title Field */}
           <div>
             <label className="block text-sm font-medium">Title</label>
             <Input
@@ -62,9 +61,7 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
             />
           </div>
 
-          {/* Priority & Status */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Priority Dropdown */}
             <div>
               <label className="block text-sm font-medium">Priority</label>
               <Select value={priority} onValueChange={setPriority}>
@@ -81,7 +78,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
               </Select>
             </div>
 
-            {/* Status Toggle */}
             <div>
               <label className="block text-sm font-medium">Status</label>
               <div className="flex items-center gap-2 mt-2">
@@ -92,7 +88,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
             </div>
           </div>
 
-          {/* Start & End Time Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium">Start Time</label>
@@ -115,7 +110,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
           </div>
         </div>
 
-        {/* Action Buttons */}
         <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
             Cancel

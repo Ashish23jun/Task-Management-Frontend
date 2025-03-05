@@ -1,11 +1,10 @@
 import React from 'react';
 
 const Dashboard: React.FC = () => {
-  // 🔹 Static data now, will be fetched from API later
   const stats = {
     totalTasks: 25,
-    tasksCompleted: 40, // Percentage
-    tasksPending: 60, // Percentage
+    tasksCompleted: 40,
+    tasksPending: 60,
     avgCompletionTime: '3.5 hrs',
     pendingTasks: 15,
     totalTimeLapsed: '56 hrs',
@@ -15,10 +14,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="bg-gray-100 min-h-screen p-6">
       <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-        {/* 🔹 Dashboard Title */}
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
 
-        {/* 🔹 Summary Section */}
         <section className="mt-6">
           <h2 className="text-xl font-semibold text-gray-700">Summary</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
@@ -41,7 +38,6 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* 🔹 Pending Task Summary */}
         <section className="mt-8">
           <h2 className="text-xl font-semibold text-gray-700">Pending Task Summary</h2>
           <div className="grid grid-cols-3 gap-6 mt-4">

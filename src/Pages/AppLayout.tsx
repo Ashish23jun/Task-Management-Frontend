@@ -7,7 +7,6 @@ const AppLayout = () => {
       <Navbar />
       <div className="pt-20 px-6">
         {' '}
-        {/* Adds padding so content is not hidden behind Navbar */}
         <Outlet />
       </div>
     </>
