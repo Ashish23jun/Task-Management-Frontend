@@ -16,11 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { addTaskApi, updateTaskApi } from '@/api/task.api';
 
 interface TaskDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialTask?: {
+    id: string;
     title: string;
     priority: number;
     status: string;
@@ -35,10 +37,35 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
   const [status, setStatus] = useState(initialTask?.status === 'Finished');
   const [startTime, setStartTime] = useState(initialTask?.startTime || '');
   const [endTime, setEndTime] = useState(initialTask?.endTime || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    console.log({ title, priority, status: status ? 'Finished' : 'Pending', startTime, endTime });
-    onClose();
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+
+    const taskData = {
+      title,
+      startTime,
+      endTime: endTime || undefined,
+      priority: Number(priority),
+      status: status ? 'Finished' : 'Pending',
+    };
+
+    try {
+      if (initialTask) {
+        await updateTaskApi(initialTask.id, taskData);
+      } else {
+        await addTaskApi(taskData);
+      }
+
+      onClose();
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.error || 'Failed to save task');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +77,8 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
           </DialogTitle>
         </DialogHeader>
 
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Title</label>
@@ -57,7 +86,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title"
-              className="w-full"
             />
           </div>
 
@@ -95,7 +123,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full"
               />
             </div>
             <div>
@@ -104,7 +131,6 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full"
               />
             </div>
           </div>
@@ -114,8 +140,8 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="default" onClick={handleSubmit}>
-            {initialTask ? 'Save Changes' : 'Add Task'}
+          <Button variant="default" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Saving...' : initialTask ? 'Save Changes' : 'Add Task'}
           </Button>
         </DialogFooter>
       </DialogContent>

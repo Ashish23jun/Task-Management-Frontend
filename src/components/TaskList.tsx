@@ -34,7 +34,7 @@ const TaskTable: React.FC = () => {
     const fetchTasks = async () => {
       try {
         const data = await getTasksApi();
-        setTasks(data); // ✅ Set tasks from API
+        setTasks(data);
         console.log(data);
       } catch (err: any) {
         setError(err.message || 'Failed to load tasks');
@@ -46,7 +46,7 @@ const TaskTable: React.FC = () => {
     fetchTasks();
   }, []);
   console.log('I am called');
-  // Handle selecting tasks
+
   const handleTaskSelection = (taskId: number) => {
     setSelectedTasks((prev) =>
       prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
