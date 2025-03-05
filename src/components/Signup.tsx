@@ -1,7 +1,7 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 const Signup: React.FC = () => {
   return (
@@ -24,13 +24,18 @@ const Signup: React.FC = () => {
             <Input id="password" type="password" placeholder="Create a password" />
           </div>
 
+          <div className="mb-4">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input id="confirmPassword" type="password" placeholder="Confirm your password" />
+          </div>
+
           <Button type="submit" className="w-full mt-4">
             Sign Up
           </Button>
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-4">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <a href="/login" className="text-blue-600 hover:underline">
             Login
           </a>
