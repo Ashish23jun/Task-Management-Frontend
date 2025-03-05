@@ -2,6 +2,7 @@ import { handleApiError } from './handleApiErrors';
 import apiClient from './interceptors';
 
 export const loginUser = async (data: { email: string; password: string }) => {
+  console.log(data);
   return await apiClient.post('/auth/login', data);
 };
 

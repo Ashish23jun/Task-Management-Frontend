@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -17,8 +17,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Pencil, Trash2, SlidersHorizontal } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
+import { getTasksApi } from '@/api/task.api';
 
 const TaskTable: React.FC = () => {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
@@ -26,54 +30,22 @@ const TaskTable: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  const tasks = [
-    {
-      id: 1,
-      title: 'Buy clothes',
-      priority: 5,
-      status: 'Pending',
-      startTime: '26-Nov-24 11:00 AM',
-      endTime: '30-Nov-24 11:00 AM',
-      totalTime: 96,
-    },
-    {
-      id: 2,
-      title: 'Finish code',
-      priority: 2,
-      status: 'Finished',
-      startTime: '25-Nov-24 09:05 AM',
-      endTime: '25-Nov-24 03:15 PM',
-      totalTime: 6.17,
-    },
-    {
-      id: 3,
-      title: 'Book travel tickets',
-      priority: 4,
-      status: 'Pending',
-      startTime: '19-Nov-24 10:00 PM',
-      endTime: '20-Nov-24 11:00 PM',
-      totalTime: 25,
-    },
-    {
-      id: 4,
-      title: 'Order groceries',
-      priority: 3,
-      status: 'Finished',
-      startTime: '14-Oct-24 10:30 AM',
-      endTime: '16-Oct-24 10:30 PM',
-      totalTime: 60,
-    },
-    {
-      id: 5,
-      title: 'Medical checkup',
-      priority: 1,
-      status: 'Pending',
-      startTime: '19-Nov-24 01:15 PM',
-      endTime: '21-Dec-24 05:00 PM',
-      totalTime: 51.75,
-    },
-  ];
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const data = await getTasksApi();
+        setTasks(data); // ✅ Set tasks from API
+        console.log(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load tasks');
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchTasks();
+  }, []);
+  console.log('I am called');
   // Handle selecting tasks
   const handleTaskSelection = (taskId: number) => {
     setSelectedTasks((prev) =>
@@ -85,7 +57,8 @@ const TaskTable: React.FC = () => {
     setEditingTask(task);
     setIsDialogOpen(true);
   };
-
+  if (loading) return <p className="text-center text-gray-600">Loading tasks...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
       <div className="mb-4">
@@ -189,7 +162,6 @@ const TaskTable: React.FC = () => {
             <TableHead>Status</TableHead>
             <TableHead>Start Time</TableHead>
             <TableHead>End Time</TableHead>
-            <TableHead>Total Time (hrs)</TableHead>
             <TableHead>Edit</TableHead>
           </TableRow>
         </TableHeader>
@@ -210,9 +182,10 @@ const TaskTable: React.FC = () => {
               >
                 {task.status}
               </TableCell>
-              <TableCell>{task.startTime}</TableCell>
-              <TableCell>{task.endTime}</TableCell>
-              <TableCell>{task.totalTime}</TableCell>
+              <TableCell>{new Date(task.startTime).toLocaleString()}</TableCell>
+              <TableCell>
+                {task.endTime ? new Date(task.endTime).toLocaleString() : 'Not finished'}
+              </TableCell>
               <TableCell>
                 <Button variant="ghost" onClick={() => openDialog(task)}>
                   <Pencil className="h-4 w-4" />
