@@ -3,7 +3,7 @@ import apiClient from './interceptors';
 
 export const getTasksApi = async () => {
   try {
-    const response = await apiClient.get('/tasks'); 
+    const response = await apiClient.get('/tasks');
     console.log(response.data);
     return response.data;
   } catch (error) {
@@ -43,6 +43,15 @@ export const updateTaskApi = async (
     };
 
     const response = await apiClient.patch(`/tasks/${taskId}`, formattedTaskData);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+export const deleteTaskApi = async (taskId: string) => {
+  try {
+    const response = await apiClient.delete(`/tasks/${taskId}`);
     return response.data;
   } catch (error) {
     throw handleApiError(error);

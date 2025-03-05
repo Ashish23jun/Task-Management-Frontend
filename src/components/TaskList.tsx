@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Pencil, Trash2, SlidersHorizontal } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
-import { getTasksApi } from '@/api/task.api';
+import { deleteTaskApi, getTasksApi } from '@/api/task.api';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -57,6 +57,18 @@ const TaskTable: React.FC = () => {
     setEditingTask(task);
     setIsDialogOpen(true);
   };
+
+  const handleDelete = async () => {
+    if (selectedTasks.length === 0) return;
+
+    try {
+      await Promise.all(selectedTasks.map((taskId) => deleteTaskApi(taskId.toString())));
+      setTasks((prev) => prev.filter((task) => !selectedTasks.includes(task.id)));
+      setSelectedTasks([]);
+    } catch (error) {
+      console.error('Failed to delete tasks:', error);
+    }
+  };
   if (loading) return <p className="text-center text-gray-600">Loading tasks...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   return (
@@ -69,7 +81,11 @@ const TaskTable: React.FC = () => {
             <Button variant="outline" onClick={() => openDialog(null)}>
               + Add Task
             </Button>
-            <Button variant="destructive" disabled={selectedTasks.length === 0}>
+            <Button
+              variant="destructive"
+              disabled={selectedTasks.length === 0}
+              onClick={handleDelete}
+            >
               <Trash2 className="h-4 w-4 mr-1" /> Delete Selected
             </Button>
           </div>
