@@ -15,9 +15,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, SlidersHorizontal } from 'lucide-react';
+import { Pencil, Trash2, SlidersHorizontal, Check } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
 import { deleteTaskApi, getTasksApi } from '@/api/task.api';
+import { getSortedTasksApi } from '@/api/sort.api';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -31,26 +32,34 @@ const TaskTable: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const data = await getTasksApi();
-        setTasks(data);
-        console.log(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load tasks');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTasks();
-  }, []);
+  }, [sortOrder]);
+
+  const fetchTasks = async () => {
+    try {
+      let data;
+      if (sortOrder) {
+        const [sortBy, order] = sortOrder.split('-');
+        data = await getSortedTasksApi(sortBy, order);
+      } else {
+        data = await getTasksApi();
+      }
+      setTasks(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
   console.log('I am called');
 
   const handleTaskSelection = (taskId: number) => {
     setSelectedTasks((prev) =>
       prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
     );
+  };
+  const handleSortSelection = (newSortOrder: string) => {
+    setSortOrder(newSortOrder);
   };
 
   const openDialog = (task: any = null) => {
@@ -94,23 +103,28 @@ const TaskTable: React.FC = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary">
-                  <SlidersHorizontal className="h-4 w-4 mr-2" /> Sort
+                  <SlidersHorizontal className="h-4 w-4 mr-2" /> Sort{' '}
+                  {sortOrder ? `(${sortOrder})` : ''}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48">
-                <DropdownMenuItem onClick={() => setSortOrder('start-asc')}>
-                  Start time: ASC
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOrder('start-desc')}>
-                  Start time: DESC
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOrder('end-asc')}>
-                  End time: ASC
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOrder('end-desc')}>
-                  End time: DESC
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500" onClick={() => setSortOrder(null)}>
+                {[
+                  { label: 'Start time: ASC', value: 'startTime-asc' },
+                  { label: 'Start time: DESC', value: 'startTime-desc' },
+                  { label: 'End time: ASC', value: 'endTime-asc' },
+                  { label: 'End time: DESC', value: 'endTime-desc' },
+                ].map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => handleSortSelection(option.value)}
+                  >
+                    {option.label}{' '}
+                    {sortOrder === option.value && (
+                      <Check className="h-4 w-4 ml-2 text-green-500" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem className="text-red-500" onClick={() => handleSortSelection('')}>
                   Remove sort
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -178,6 +192,7 @@ const TaskTable: React.FC = () => {
             <TableHead>Status</TableHead>
             <TableHead>Start Time</TableHead>
             <TableHead>End Time</TableHead>
+            <TableHead>Total time to Finish</TableHead>
             <TableHead>Edit</TableHead>
           </TableRow>
         </TableHeader>
@@ -202,6 +217,15 @@ const TaskTable: React.FC = () => {
               <TableCell>
                 {task.endTime ? new Date(task.endTime).toLocaleString() : 'Not finished'}
               </TableCell>
+              <TableCell>
+                {task.endTime
+                  ? (
+                      (new Date(task.endTime).getTime() - new Date(task.startTime).getTime()) /
+                      (1000 * 60 * 60)
+                    ).toFixed(2) + ' hrs'
+                  : 'Not finished'}
+              </TableCell>
+
               <TableCell>
                 <Button variant="ghost" onClick={() => openDialog(task)}>
                   <Pencil className="h-4 w-4" />
