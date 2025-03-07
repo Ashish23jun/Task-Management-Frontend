@@ -18,7 +18,7 @@ import {
 import { Pencil, Trash2, SlidersHorizontal, Check } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
 import { deleteTaskApi, getTasksApi } from '@/api/task.api';
-import { getSortedTasksApi } from '@/api/sort.api';
+import { getSortedTasksApi, getTaskByStatus, getTasksByPriorityApi } from '@/api/sort.api';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -30,15 +30,18 @@ const TaskTable: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-
   useEffect(() => {
     fetchTasks();
-  }, [sortOrder]);
+  }, [sortOrder, priorityFilter, statusFilter]);
 
   const fetchTasks = async () => {
     try {
       let data;
-      if (sortOrder) {
+      if (statusFilter) {
+        data = await getTaskByStatus(statusFilter);
+      } else if (priorityFilter) {
+        data = await getTasksByPriorityApi(Number(priorityFilter));
+      } else if (sortOrder) {
         const [sortBy, order] = sortOrder.split('-');
         data = await getSortedTasksApi(sortBy, order);
       } else {
@@ -51,6 +54,7 @@ const TaskTable: React.FC = () => {
       setLoading(false);
     }
   };
+
   console.log('I am called');
 
   const handleTaskSelection = (taskId: number) => {
