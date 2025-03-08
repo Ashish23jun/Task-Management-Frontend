@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-blue-600 text-white py-4 px-6 shadow-md z-50">
+    <nav className="fixed top-0 left-0 w-full bg-[#020246] text-white py-4 px-6 shadow-md z-50">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-xl font-bold flex items-center gap-4">
           <Link to="/" className="hover:text-gray-300 transition">

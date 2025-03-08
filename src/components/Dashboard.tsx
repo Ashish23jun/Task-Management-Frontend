@@ -1,12 +1,29 @@
+'use client';
+
 import { getTaskCountsApi, getTaskTimeMetricsApi } from '@/api/dashboardData.api';
-import React, { useEffect, useState } from 'react';
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Clock,
+  ClockIcon as ClockCountdown,
+  Hourglass,
+  ListChecks,
+  Loader2,
+  TimerReset,
+  XCircle,
+} from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState({
     totalTasks: 0,
     tasksCompleted: 0,
     tasksPending: 0,
-    avgCompletionTime: 0, // Changed from string to number
+    avgCompletionTime: 0,
     pendingTasks: 0,
     totalTimeLapsed: 0,
     totalTimeToFinish: 0,
@@ -47,60 +64,177 @@ const Dashboard: React.FC = () => {
     fetchDashboardStats();
   }, []);
 
-  if (loading) return <p className="text-center text-gray-600">Loading dashboard...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-destructive flex items-center gap-2">
+              <XCircle className="h-5 w-5" />
+              Error Loading Dashboard
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
 
   return (
-    <div className="bg-gray-100 min-h-screen p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor your task progress and performance metrics
+          </p>
+        </div>
 
-        <section className="mt-6">
-          <h2 className="text-xl font-semibold text-gray-700">Summary</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-blue-600">{stats.totalTasks}</p>
-              <p className="text-gray-600">Total tasks</p>
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Summary</h2>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Last updated: Just now</span>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">
-                {stats.tasksCompleted.toFixed(1)}%
-              </p>
-              <p className="text-gray-600">Tasks completed</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-red-600">{stats.tasksPending.toFixed(1)}%</p>
-              <p className="text-gray-600">Tasks pending</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-purple-600">
-                {stats.avgCompletionTime.toFixed(2)} hrs
-              </p>
-              <p className="text-gray-600">Avg time per task</p>
-            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Tasks</CardDescription>
+                <CardTitle className="text-4xl font-bold flex items-center gap-2">
+                  {stats.totalTasks}
+                  <ListChecks className="h-6 w-6 text-primary" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground">All tasks in your workspace</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Tasks Completed</CardDescription>
+                <CardTitle className="text-4xl font-bold text-green-500">
+                  {stats.tasksCompleted.toFixed(1)}%
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Progress value={stats.tasksCompleted} className="h-2 bg-muted" />
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Progress</span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    {Math.round((stats.totalTasks * stats.tasksCompleted) / 100)} of{' '}
+                    {stats.totalTasks} tasks
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Tasks Pending</CardDescription>
+                <CardTitle className="text-4xl font-bold text-amber-500">
+                  {stats.tasksPending.toFixed(1)}%
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Progress value={stats.tasksPending} className="h-2 bg-muted" />
+                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Remaining</span>
+                  <span className="flex items-center gap-1">
+                    <Hourglass className="h-3 w-3 text-amber-500" />
+                    {stats.pendingTasks} of {stats.totalTasks} tasks
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Time Per Task</CardDescription>
+                <CardTitle className="text-4xl font-bold text-purple-500">
+                  {stats.avgCompletionTime.toFixed(2)}
+                  <span className="text-lg ml-1">hrs</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <TimerReset className="h-4 w-4" />
+                  <span>Average completion time</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
-        <section className="mt-8">
-          <h2 className="text-xl font-semibold text-gray-700">Pending Task Summary</h2>
-          <div className="grid grid-cols-3 gap-6 mt-4">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-orange-600">{stats.pendingTasks}</p>
-              <p className="text-gray-600">Pending tasks</p>
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Pending Task Summary</h2>
+            <div className="text-sm font-medium text-primary">
+              View all tasks
+              <ArrowUpRight className="h-4 w-4 inline ml-1" />
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-indigo-600">
-                {stats.totalTimeLapsed.toFixed(2)} hrs
-              </p>
-              <p className="text-gray-600">Total time lapsed</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-pink-600">
-                {stats.totalTimeToFinish.toFixed(2)} hrs
-              </p>
-              <p className="text-gray-600">Total time to finish</p>
-              <p className="text-sm italic text-gray-500">Estimated based on end time</p>
-            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-gradient-to-br from-background to-muted/30">
+              <CardHeader className="pb-2">
+                <CardDescription>Pending Tasks</CardDescription>
+                <CardTitle className="text-4xl font-bold text-orange-500 flex items-center gap-2">
+                  {stats.pendingTasks}
+                  <Hourglass className="h-6 w-6 text-orange-500" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground">Tasks awaiting completion</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-background to-muted/30">
+              <CardHeader className="pb-2">
+                <CardDescription>Total Time Lapsed</CardDescription>
+                <CardTitle className="text-4xl font-bold text-indigo-500">
+                  {stats.totalTimeLapsed.toFixed(2)}
+                  <span className="text-lg ml-1">hrs</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Time spent on pending tasks</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-background to-muted/30">
+              <CardHeader className="pb-2">
+                <CardDescription>Total Time to Finish</CardDescription>
+                <CardTitle className="text-4xl font-bold text-pink-500">
+                  {stats.totalTimeToFinish.toFixed(2)}
+                  <span className="text-lg ml-1">hrs</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <ClockCountdown className="h-4 w-4" />
+                  <span>Estimated based on end time</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </div>

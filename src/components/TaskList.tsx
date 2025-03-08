@@ -38,7 +38,7 @@ const TaskTable: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const limit = 10; // Number of tasks per page
+  const limit = 10;
 
   useEffect(() => {
     fetchTasks();
