@@ -377,7 +377,7 @@ const TaskTable: React.FC = () => {
                   }
                 />
               </TableHead>
-              <TableHead className="w-[120px]">Task ID</TableHead>
+              <TableHead className="w-[280px]">Task ID</TableHead>
               <TableHead>Title</TableHead>
               <TableHead className="w-[100px]">Priority</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
@@ -406,8 +406,8 @@ const TaskTable: React.FC = () => {
                       onCheckedChange={() => handleTaskSelection(task.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-slate-600">
-                    {task.id.toString().substring(0, 8)}...
+                  <TableCell className="font-mono text-xs text-slate-600 whitespace-normal break-all">
+                    {task.id}
                   </TableCell>
                   <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>{getPriorityBadge(task.priority)}</TableCell>
@@ -564,7 +564,7 @@ const TaskTable: React.FC = () => {
           isOpen={isDialogOpen}
           onClose={() => {
             setIsDialogOpen(false);
-            fetchTasks(); // Refresh tasks after dialog closes
+            fetchTasks();
           }}
           initialTask={editingTask}
         />

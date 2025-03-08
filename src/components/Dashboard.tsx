@@ -1,5 +1,3 @@
-'use client';
-
 import { getTaskCountsApi, getTaskTimeMetricsApi } from '@/api/dashboardData.api';
 import {
   ArrowUpRight,
