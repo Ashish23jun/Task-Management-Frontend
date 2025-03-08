@@ -18,7 +18,6 @@ import {
 import { Pencil, Trash2, SlidersHorizontal, Check } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
 import { deleteTaskApi, getTasksApi } from '@/api/task.api';
-import { getSortedTasksApi, getTaskByStatus, getTasksByPriorityApi } from '@/api/sort.api';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -30,24 +29,25 @@ const TaskTable: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const limit = 10; // Number of tasks per page
+
   useEffect(() => {
     fetchTasks();
-  }, [sortOrder, priorityFilter, statusFilter]);
+  }, [sortOrder, priorityFilter, statusFilter, currentPage]);
 
   const fetchTasks = async () => {
     try {
-      let data;
-      if (statusFilter) {
-        data = await getTaskByStatus(statusFilter);
-      } else if (priorityFilter) {
-        data = await getTasksByPriorityApi(Number(priorityFilter));
-      } else if (sortOrder) {
-        const [sortBy, order] = sortOrder.split('-');
-        data = await getSortedTasksApi(sortBy, order);
-      } else {
-        data = await getTasksApi();
-      }
-      setTasks(data);
+      let data = await getTasksApi(
+        currentPage,
+        limit,
+        sortOrder ? sortOrder.split('-')[0] : undefined,
+        sortOrder ? sortOrder.split('-')[1] : undefined,
+        priorityFilter || undefined,
+        statusFilter || undefined
+      );
+
+      setTasks(data.tasks);
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks');
     } finally {
@@ -55,17 +55,22 @@ const TaskTable: React.FC = () => {
     }
   };
 
-  console.log('I am called');
-
   const handleTaskSelection = (taskId: number) => {
     setSelectedTasks((prev) =>
       prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
     );
   };
+
   const handleSortSelection = (newSortOrder: string) => {
     setSortOrder(newSortOrder);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+  const handleStatusSelection = (status: string | null) => {
+    setStatusFilter(status);
+  };
   const openDialog = (task: any = null) => {
     setEditingTask(task);
     setIsDialogOpen(true);
@@ -82,6 +87,7 @@ const TaskTable: React.FC = () => {
       console.error('Failed to delete tasks:', error);
     }
   };
+
   if (loading) return <p className="text-center text-gray-600">Loading tasks...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   return (
@@ -151,24 +157,20 @@ const TaskTable: React.FC = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={statusFilter === 'Finished' ? 'text-purple-600' : ''}
-                >
-                  Status {statusFilter ? `: ${statusFilter}` : ''}
-                </Button>
+                <Button variant="outline">Status {statusFilter ? `: ${statusFilter}` : ''}</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48">
-                <DropdownMenuItem onClick={() => setStatusFilter('Pending')}>
-                  Pending
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter('Finished')}>
-                  Finished ✅
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500" onClick={() => setStatusFilter(null)}>
+                {['Pending', 'Finished'].map((status) => (
+                  <DropdownMenuItem key={status} onClick={() => handleStatusSelection(status)}>
+                    {status}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  className="text-red-500"
+                  onClick={() => handleStatusSelection(null)}
+                >
                   Remove filter
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -239,6 +241,19 @@ const TaskTable: React.FC = () => {
           ))}
         </TableBody>
       </Table>
+      <div className="flex justify-between mt-4">
+        <Button
+          variant="outline"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </Button>
+        <span>Page {currentPage}</span>
+        <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)}>
+          Next
+        </Button>
+      </div>
       {isDialogOpen && (
         <AddandEditDialogue
           isOpen={isDialogOpen}

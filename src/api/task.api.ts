@@ -1,16 +1,6 @@
 import { handleApiError } from './handleApiErrors';
 import apiClient from './interceptors';
 
-export const getTasksApi = async () => {
-  try {
-    const response = await apiClient.get('/tasks');
-    console.log(response.data);
-    return response.data;
-  } catch (error) {
-    throw handleApiError(error);
-  }
-};
-
 export const addTaskApi = async (taskData: {
   title: string;
   startTime: string;
@@ -52,6 +42,36 @@ export const updateTaskApi = async (
 export const deleteTaskApi = async (taskId: string) => {
   try {
     const response = await apiClient.delete(`/tasks/${taskId}`);
+    return response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+export const getTasksApi = async (
+  page = 1,
+  limit = 10,
+  sortBy?: string,
+  order?: string,
+  priority?: string,
+  status?: string
+) => {
+  try {
+    const params: any = { page, limit };
+
+    if (sortBy && order) {
+      params.sortBy = sortBy;
+      params.order = order;
+    }
+
+    if (priority) {
+      params.priority = priority;
+    }
+
+    if (status) {
+      params.status = status;
+    }
+
+    const response = await apiClient.get('/tasks', { params });
     return response.data;
   } catch (error) {
     throw handleApiError(error);
