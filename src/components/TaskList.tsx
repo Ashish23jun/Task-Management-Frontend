@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -14,17 +17,26 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, SlidersHorizontal, Check } from 'lucide-react';
+import {
+  Pencil,
+  Trash2,
+  Check,
+  Plus,
+  Clock,
+  CalendarClock,
+  Filter,
+  ArrowUpDown,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
 import { deleteTaskApi, getTasksApi } from '@/api/task.api';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-} from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -46,7 +58,7 @@ const TaskTable: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      let data = await getTasksApi(
+      const data = await getTasksApi(
         currentPage,
         limit,
         sortOrder ? sortOrder.split('-')[0] : undefined,
@@ -77,9 +89,11 @@ const TaskTable: React.FC = () => {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
+
   const handleStatusSelection = (status: string | null) => {
     setStatusFilter(status);
   };
+
   const openDialog = (task: any = null) => {
     setEditingTask(task);
     setIsDialogOpen(true);
@@ -97,191 +111,465 @@ const TaskTable: React.FC = () => {
     }
   };
 
-  if (loading) return <p className="text-center text-gray-600">Loading tasks...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
-  return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">Task List</h2>
+  const getPriorityBadge = (priority: number) => {
+    const colors = {
+      1: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      2: 'bg-green-100 text-green-800 hover:bg-green-200',
+      3: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+      4: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+      5: 'bg-red-100 text-red-800 hover:bg-red-200',
+    };
 
-        <div className="flex justify-between items-center mt-2">
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => openDialog(null)}>
-              + Add Task
+    return (
+      <Badge variant="outline" className={`${colors[priority as keyof typeof colors]} font-medium`}>
+        {priority}
+      </Badge>
+    );
+  };
+
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-5 w-5" />
+            <p>{error}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+
+  return (
+    <Card className="border-none shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-t-lg pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <CardTitle className="text-2xl font-bold text-slate-800">Task Management</CardTitle>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => openDialog(null)}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Task
             </Button>
+
             <Button
               variant="destructive"
               disabled={selectedTasks.length === 0}
               onClick={handleDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
             >
-              <Trash2 className="h-4 w-4 mr-1" /> Delete Selected
+              <Trash2 className="h-4 w-4 mr-2" />
+              {selectedTasks.length > 0 ? `Delete (${selectedTasks.length})` : 'Delete Selected'}
             </Button>
           </div>
-
-          <div className="flex gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary">
-                  <SlidersHorizontal className="h-4 w-4 mr-2" /> Sort{' '}
-                  {sortOrder ? `(${sortOrder})` : ''}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {[
-                  { label: 'Start time: ASC', value: 'startTime-asc' },
-                  { label: 'Start time: DESC', value: 'startTime-desc' },
-                  { label: 'End time: ASC', value: 'endTime-asc' },
-                  { label: 'End time: DESC', value: 'endTime-desc' },
-                ].map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => handleSortSelection(option.value)}
-                  >
-                    {option.label}{' '}
-                    {sortOrder === option.value && (
-                      <Check className="h-4 w-4 ml-2 text-green-500" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem className="text-red-500" onClick={() => handleSortSelection('')}>
-                  Remove sort
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  Priority {priorityFilter ? `: ${priorityFilter}` : ''}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <DropdownMenuItem key={num} onClick={() => setPriorityFilter(num.toString())}>
-                    {num}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem className="text-red-500" onClick={() => setPriorityFilter(null)}>
-                  Remove filter
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">Status {statusFilter ? `: ${statusFilter}` : ''}</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                {['Pending', 'Finished'].map((status) => (
-                  <DropdownMenuItem key={status} onClick={() => handleStatusSelection(status)}>
-                    {status}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem
-                  className="text-red-500"
-                  onClick={() => handleStatusSelection(null)}
-                >
-                  Remove filter
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
-      </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>
-              <Checkbox
-                checked={selectedTasks.length === tasks.length}
-                onCheckedChange={() =>
-                  setSelectedTasks(
-                    selectedTasks.length === tasks.length ? [] : tasks.map((t) => t.id)
-                  )
-                }
-              />
-            </TableHead>
-            <TableHead>Task ID</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Start Time</TableHead>
-            <TableHead>End Time</TableHead>
-            <TableHead>Total time to Finish</TableHead>
-            <TableHead>Edit</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tasks.map((task) => (
-            <TableRow key={task.id}>
-              <TableCell>
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="bg-white border-slate-200 hover:bg-slate-50"
+                    >
+                      <ArrowUpDown className="h-4 w-4 mr-2" />
+                      {sortOrder ? `Sorted by ${sortOrder.split('-')[0]}` : 'Sort'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56">
+                    <DropdownMenuItem className="font-medium text-slate-500" disabled>
+                      Sort Options
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {[
+                      { label: 'Start time (Earliest first)', value: 'startTime-asc' },
+                      { label: 'Start time (Latest first)', value: 'startTime-desc' },
+                      { label: 'End time (Earliest first)', value: 'endTime-asc' },
+                      { label: 'End time (Latest first)', value: 'endTime-desc' },
+                    ].map((option) => (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onClick={() => handleSortSelection(option.value)}
+                        className="flex items-center justify-between"
+                      >
+                        {option.label}
+                        {sortOrder === option.value && <Check className="h-4 w-4 text-primary" />}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-slate-500"
+                      onClick={() => handleSortSelection('')}
+                      disabled={!sortOrder}
+                    >
+                      Clear sorting
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sort tasks by time</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="bg-white border-slate-200 hover:bg-slate-50"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      {priorityFilter ? `Priority: ${priorityFilter}` : 'Priority'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48">
+                    <DropdownMenuItem className="font-medium text-slate-500" disabled>
+                      Filter by Priority
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <DropdownMenuItem
+                        key={num}
+                        onClick={() => setPriorityFilter(num.toString())}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-3 w-3 rounded-full ${
+                              num === 1
+                                ? 'bg-blue-500'
+                                : num === 2
+                                  ? 'bg-green-500'
+                                  : num === 3
+                                    ? 'bg-yellow-500'
+                                    : num === 4
+                                      ? 'bg-orange-500'
+                                      : 'bg-red-500'
+                            }`}
+                          ></span>
+                          Priority {num}
+                        </div>
+                        {priorityFilter === num.toString() && (
+                          <Check className="h-4 w-4 text-primary" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-slate-500"
+                      onClick={() => setPriorityFilter(null)}
+                      disabled={!priorityFilter}
+                    >
+                      Clear filter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Filter by priority level</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="bg-white border-slate-200 hover:bg-slate-50"
+                    >
+                      {statusFilter === 'Finished' ? (
+                        <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
+                      ) : statusFilter === 'Pending' ? (
+                        <Clock className="h-4 w-4 mr-2 text-amber-500" />
+                      ) : (
+                        <CalendarClock className="h-4 w-4 mr-2" />
+                      )}
+                      {statusFilter || 'Status'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48">
+                    <DropdownMenuItem className="font-medium text-slate-500" disabled>
+                      Filter by Status
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleStatusSelection('Pending')}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-500" />
+                        Pending
+                      </div>
+                      {statusFilter === 'Pending' && <Check className="h-4 w-4 text-primary" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleStatusSelection('Finished')}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        Finished
+                      </div>
+                      {statusFilter === 'Finished' && <Check className="h-4 w-4 text-primary" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-slate-500"
+                      onClick={() => handleStatusSelection(null)}
+                      disabled={!statusFilter}
+                    >
+                      Clear filter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Filter by task status</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {(sortOrder || priorityFilter || statusFilter) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSortOrder(null);
+                setPriorityFilter(null);
+                setStatusFilter(null);
+              }}
+              className="text-slate-500 hover:text-slate-700"
+            >
+              Clear all filters
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-0 overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-slate-50">
+            <TableRow className="hover:bg-slate-100/80">
+              <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={selectedTasks.includes(task.id)}
-                  onCheckedChange={() => handleTaskSelection(task.id)}
+                  checked={selectedTasks.length === tasks.length && tasks.length > 0}
+                  onCheckedChange={() =>
+                    setSelectedTasks(
+                      selectedTasks.length === tasks.length ? [] : tasks.map((t) => t.id)
+                    )
+                  }
                 />
-              </TableCell>
-              <TableCell>{task.id}</TableCell>
-              <TableCell>{task.title}</TableCell>
-              <TableCell>{task.priority}</TableCell>
-              <TableCell
-                className={`font-semibold ${task.status === 'Finished' ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {task.status}
-              </TableCell>
-              <TableCell>{new Date(task.startTime).toLocaleString()}</TableCell>
-              <TableCell>
-                {task.endTime ? new Date(task.endTime).toLocaleString() : 'Not finished'}
-              </TableCell>
-              <TableCell>
-                {task.endTime
-                  ? (
-                      (new Date(task.endTime).getTime() - new Date(task.startTime).getTime()) /
-                      (1000 * 60 * 60)
-                    ).toFixed(2) + ' hrs'
-                  : 'Not finished'}
-              </TableCell>
-
-              <TableCell>
-                <Button variant="ghost" onClick={() => openDialog(task)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </TableCell>
+              </TableHead>
+              <TableHead className="w-[120px]">Task ID</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead className="w-[100px]">Priority</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[180px]">Start Time</TableHead>
+              <TableHead className="w-[180px]">End Time</TableHead>
+              <TableHead className="w-[150px]">Duration</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Pagination className="mt-4">
-        <PaginationContent>
-          <PaginationItem>
-            {currentPage > 1 ? (
-              <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+          </TableHeader>
+          <TableBody>
+            {tasks.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-24 text-center text-slate-500">
+                  No tasks found. Try clearing filters or add a new task.
+                </TableCell>
+              </TableRow>
             ) : (
-              <span className="px-4 py-2 text-gray-400 cursor-not-allowed">Previous</span>
+              tasks.map((task) => (
+                <TableRow
+                  key={task.id}
+                  className={`group ${selectedTasks.includes(task.id) ? 'bg-slate-50' : ''} hover:bg-slate-50`}
+                >
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedTasks.includes(task.id)}
+                      onCheckedChange={() => handleTaskSelection(task.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-slate-600">
+                    {task.id.toString().substring(0, 8)}...
+                  </TableCell>
+                  <TableCell className="font-medium">{task.title}</TableCell>
+                  <TableCell>{getPriorityBadge(task.priority)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={`${
+                        task.status === 'Finished'
+                          ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                          : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                      }`}
+                    >
+                      {task.status === 'Finished' ? (
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Clock className="h-3 w-3 mr-1" />
+                      )}
+                      {task.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-600 text-sm">
+                    {new Date(task.startTime).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-slate-600 text-sm">
+                    {task.endTime ? (
+                      new Date(task.endTime).toLocaleString()
+                    ) : (
+                      <span className="text-slate-400 italic">Not finished</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {task.endTime ? (
+                      <Badge variant="outline" className="bg-slate-100 text-slate-700 font-mono">
+                        {(
+                          (new Date(task.endTime).getTime() - new Date(task.startTime).getTime()) /
+                          (1000 * 60 * 60)
+                        ).toFixed(2)}
+                        <span className="ml-1 text-slate-500">hrs</span>
+                      </Badge>
+                    ) : (
+                      <span className="text-slate-400 italic">In progress</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openDialog(task)}
+                      className="opacity-70 group-hover:opacity-100 hover:bg-slate-200"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
-          </PaginationItem>
-          <PaginationItem>
-            <span className="px-4 py-2 border rounded-md text-gray-700">
-              Page {currentPage} of {totalPages}
-            </span>
-          </PaginationItem>
-          <PaginationItem>
-            {currentPage < totalPages ? (
-              <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
-            ) : (
-              <span className="px-4 py-2 text-gray-400 cursor-not-allowed">Next</span>
-            )}
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+          </TableBody>
+        </Table>
+      </CardContent>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
+          <div className="text-sm text-slate-500">
+            Showing page {currentPage} of {totalPages}
+          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className="gap-1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                  Previous
+                </Button>
+              </PaginationItem>
+
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                // Show pages around current page
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <PaginationItem key={pageNum}>
+                    <Button
+                      variant={currentPage === pageNum ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`w-9 h-9 p-0 ${currentPage === pageNum ? 'pointer-events-none' : ''}`}
+                    >
+                      {pageNum}
+                    </Button>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  className="gap-1"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {isDialogOpen && (
         <AddandEditDialogue
           isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
+          onClose={() => {
+            setIsDialogOpen(false);
+            fetchTasks(); // Refresh tasks after dialog closes
+          }}
           initialTask={editingTask}
         />
       )}
-    </div>
+    </Card>
   );
 };
 
