@@ -18,6 +18,13 @@ import {
 import { Pencil, Trash2, SlidersHorizontal, Check } from 'lucide-react';
 import AddandEditDialogue from './AddandEditDialogue';
 import { deleteTaskApi, getTasksApi } from '@/api/task.api';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from '@/components/ui/pagination';
 
 const TaskTable: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -30,6 +37,7 @@ const TaskTable: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const limit = 10; // Number of tasks per page
 
   useEffect(() => {
@@ -48,6 +56,7 @@ const TaskTable: React.FC = () => {
       );
 
       setTasks(data.tasks);
+      setTotalPages(data.totalPages);
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks');
     } finally {
@@ -241,19 +250,30 @@ const TaskTable: React.FC = () => {
           ))}
         </TableBody>
       </Table>
-      <div className="flex justify-between mt-4">
-        <Button
-          variant="outline"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-        <span>Page {currentPage}</span>
-        <Button variant="outline" onClick={() => handlePageChange(currentPage + 1)}>
-          Next
-        </Button>
-      </div>
+      <Pagination className="mt-4">
+        <PaginationContent>
+          <PaginationItem>
+            {currentPage > 1 ? (
+              <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+            ) : (
+              <span className="px-4 py-2 text-gray-400 cursor-not-allowed">Previous</span>
+            )}
+          </PaginationItem>
+          <PaginationItem>
+            <span className="px-4 py-2 border rounded-md text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+          </PaginationItem>
+          <PaginationItem>
+            {currentPage < totalPages ? (
+              <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
+            ) : (
+              <span className="px-4 py-2 text-gray-400 cursor-not-allowed">Next</span>
+            )}
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+
       {isDialogOpen && (
         <AddandEditDialogue
           isOpen={isDialogOpen}
