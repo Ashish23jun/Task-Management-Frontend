@@ -3,7 +3,7 @@ import apiClient from './interceptors';
 
 export const getTaskCountsApi = async () => {
   try {
-    const response = await apiClient.get('/dashboard/status-count');
+    const response = await apiClient.get('/dashboard/task-counts');
     return response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -12,7 +12,7 @@ export const getTaskCountsApi = async () => {
 
 export const getTaskTimeMetricsApi = async () => {
   try {
-    const response = await apiClient.get('/dashboard/time-metrics');
+    const response = await apiClient.get('/dashboard/task-metrics');
     return response.data;
   } catch (error) {
     throw handleApiError(error);
