@@ -52,8 +52,8 @@ const Dashboard: React.FC = () => {
           totalTimeLapsed: timeMetrics.totalTimeLapsed,
           totalTimeToFinish: timeMetrics.totalRemainingTime,
         });
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch dashboard data');
+      } catch (err: unknown) {
+        setError((err as Error).message || 'Failed to fetch dashboard data');
       } finally {
         setLoading(false);
       }

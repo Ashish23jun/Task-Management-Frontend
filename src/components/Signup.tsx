@@ -73,8 +73,8 @@ const Signup: React.FC = () => {
 
       localStorage.setItem('authToken', response.token);
       navigate('/dashboard');
-    } catch (err: any) {
-      setErrors({ ...errors, email: err.error || 'Signup failed' });
+    } catch (err: unknown) {
+      setErrors({ ...errors, email: (err as { error?: string }).error || 'Signup failed' });
     } finally {
       setLoading(false);
     }

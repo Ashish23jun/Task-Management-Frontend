@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -38,12 +38,21 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface Task {
+  id: string;
+  title: string;
+  priority: number;
+  status: string;
+  startTime: string;
+  endTime: string;
+}
+
 const TaskTable: React.FC = () => {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
@@ -52,11 +61,7 @@ const TaskTable: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const limit = 10;
 
-  useEffect(() => {
-    fetchTasks();
-  }, [sortOrder, priorityFilter, statusFilter, currentPage]);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const data = await getTasksApi(
         currentPage,
@@ -69,12 +74,16 @@ const TaskTable: React.FC = () => {
 
       setTasks(data.tasks);
       setTotalPages(data.totalPages);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load tasks');
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, sortOrder, priorityFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const handleTaskSelection = (taskId: number) => {
     setSelectedTasks((prev) =>
@@ -94,7 +103,7 @@ const TaskTable: React.FC = () => {
     setStatusFilter(status);
   };
 
-  const openDialog = (task: any = null) => {
+  const openDialog = (task: Task | null = null) => {
     setEditingTask(task);
     setIsDialogOpen(true);
   };

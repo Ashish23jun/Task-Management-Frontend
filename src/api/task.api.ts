@@ -56,7 +56,7 @@ export const getTasksApi = async (
   status?: string
 ) => {
   try {
-    const params: any = { page, limit };
+    const params: Record<string, string | number> = { page, limit };
 
     if (sortBy && order) {
       params.sortBy = sortBy;

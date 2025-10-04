@@ -24,8 +24,8 @@ const Login: React.FC = () => {
       const response = await loginUser(formData);
       localStorage.setItem('authToken', response.data.token);
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
