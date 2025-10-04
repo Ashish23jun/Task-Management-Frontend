@@ -60,7 +60,7 @@ const AddandEditDialogue: React.FC<TaskDialogProps> = ({ isOpen, onClose, initia
       }
 
       onClose();
-      window.location.reload();
+      // window.location.reload();
     } catch (err: unknown) {
       setError((err as { error?: string }).error || 'Failed to save task');
     } finally {
