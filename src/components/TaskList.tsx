@@ -53,7 +53,7 @@ const TaskTable: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -85,7 +85,7 @@ const TaskTable: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleTaskSelection = (taskId: number) => {
+  const handleTaskSelection = (taskId: string) => {
     setSelectedTasks((prev) =>
       prev.includes(taskId) ? prev.filter((id) => id !== taskId) : [...prev, taskId]
     );
@@ -575,7 +575,7 @@ const TaskTable: React.FC = () => {
             setIsDialogOpen(false);
             fetchTasks();
           }}
-          initialTask={editingTask}
+          initialTask={editingTask || undefined}
         />
       )}
     </Card>
